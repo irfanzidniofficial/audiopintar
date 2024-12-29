@@ -17,6 +17,16 @@ export function Documents() {
     },
   });
 
+  const deleteDocument = api.document.delete.useMutation({
+    onSuccess: async () => {
+      console.log("Document deleted successfully");
+      await refetchDocuments();
+    },
+    onError: (error) => {
+      console.error("Error deleting document:", error);
+    },
+  });
+
   return (
     <div>
       <UploadButton
@@ -46,7 +56,16 @@ export function Documents() {
             className="rounded-xl border bg-white/5 p-4 text-white"
             key={document.id}
           >
-            <p>{document.name}</p>
+            <div className="flex items-center justify-between">
+              <p>{document.name}</p>
+              <button
+                onClick={() => deleteDocument.mutate({ id: document.id })}
+                className="rounded-md bg-red-500 px-3 text-white hover:bg-red-600"
+                disabled={deleteDocument.isPending}
+              >
+                {deleteDocument.isPending ? "Deleting..." : "Delete"}
+              </button>
+            </div>
             <p>Pages</p>
             {document.pages.map((page) => (
               <div key={page.id}>

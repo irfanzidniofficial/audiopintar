@@ -107,6 +107,41 @@ export const documentRouter = createTRPCRouter({
         );
       }
     }),
+
+  delete: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // fist verify that document belongs to the authenticated user
+      const document = await ctx.db.query.documents.findFirst({
+        where: (documents, { and, eq }) =>
+          and(
+            eq(documents.id, input.id),
+            eq(documents.createdById, ctx.session.user.id),
+          ),
+      });
+
+      if (!document) {
+        throw new Error(
+          "Document not foundor your don't have permission to delete it",
+        );
+      }
+
+      // delete associated page first
+      await ctx.db.delete(pages).where(eq(pages.documentId, input.id));
+
+      // then delete the document
+      const [deleteDoc] = await ctx.db
+        .delete(documents)
+        .where(eq(documents.id, input.id))
+        .returning();
+
+      return deleteDoc;
+    }),
+
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.documents.findMany({
       where: eq(documents.createdById, ctx.session.user.id),
