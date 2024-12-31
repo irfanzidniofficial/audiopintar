@@ -14,7 +14,9 @@ import { type AdapterAccount } from "next-auth/adapters";
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = sqliteTableCreator((name) => `audiopintar.com_${name}`);
+export const createTable = sqliteTableCreator(
+  (name) => `audiopintar.com_${name}`,
+);
 
 export const users = createTable("user", {
   id: text("id", { length: 255 })
@@ -57,7 +59,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -75,7 +77,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_userId_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -91,31 +93,37 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
-
-
 
 export const documents = createTable(
   "document",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     name: text("name", { length: 256 }).notNull(),
-    createdById: text("created_by", { length: 255 }).notNull().references(() => users.id),
-    createdAt: int("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
-    updatedAt: int("updatedAt", { mode: "timestamp" }).$onUpdate(() => new Date()),
+    createdById: text("created_by", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: int("updatedAt", { mode: "timestamp" }).$onUpdate(
+      () => new Date(),
+    ),
   },
   (table) => ({
     createdByIdIdx: index("doc_created_by_idx").on(table.createdById),
     nameIndex: index("doc_name_idx").on(table.name),
-  })
+  }),
 );
 
 export const pages = createTable(
   "page",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    documentId: int("document_id").notNull().references(() => documents.id),
+    documentId: int("document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
     pageNumber: int("page_number").notNull(),
     content: text("content").notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
@@ -125,14 +133,43 @@ export const pages = createTable(
   (table) => ({
     documentIdIdx: index("page_document_id_idx").on(table.documentId),
     pageNumberIdx: index("page_number_idx").on(table.pageNumber),
-  })
+  }),
 );
 
 export const documentsRelations = relations(documents, ({ many, one }) => ({
   pages: many(pages),
-  creator: one(users, { fields: [documents.createdById], references: [users.id] }),
+  creator: one(users, {
+    fields: [documents.createdById],
+    references: [users.id],
+  }),
 }));
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
-  document: one(documents, { fields: [pages.documentId], references: [documents.id] }),
+  document: one(documents, {
+    fields: [pages.documentId],
+    references: [documents.id],
+  }),
+  audioFiles: many(audioFiles),
+}));
+
+export const audioFiles = createTable(
+  "audio_file",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    pageId: int("page_id")
+      .notNull()
+      .references(() => pages.id, { onDelete: "cascade" }),
+    fileName: text("file_name", { length: 256 }).notNull(),
+    filePath: text("file_path").notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    pageIdIdx: index("audio_page_id_idx").on(table.pageId),
+  }),
+);
+
+export const audioFilesRelations = relations(audioFiles, ({ one }) => ({
+  page: one(pages, { fields: [audioFiles.pageId], references: [pages.id] }),
 }));

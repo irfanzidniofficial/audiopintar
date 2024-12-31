@@ -2,6 +2,7 @@
 
 import { UploadButton } from "~/utils/uploadthing";
 import { api } from "~/trpc/react";
+import { Pages } from "./Pages";
 
 export function Documents() {
   const { data: documents, refetch: refetchDocuments } =
@@ -67,12 +68,22 @@ export function Documents() {
               </button>
             </div>
             <p>Pages</p>
-            {document.pages.map((page) => (
+
+            {/* Generate text from file */}
+            {/* {document.pages.map((page) => (
               <div key={page.id}>
                 <p>Page {page.pageNumber}</p>
                 <p>{page.content}</p>
               </div>
-            ))}
+            ))} */}
+
+            {/* Generate audio from file */}
+            <Pages
+              documentId={document.id}
+              pages={document.pages}
+              refetchDocuments={refetchDocuments}
+              voice={"XKyLRH4oH4IqTWcQH3LI"}
+            />
           </div>
         ))}
       </div>
