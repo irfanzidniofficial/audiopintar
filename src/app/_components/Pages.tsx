@@ -16,7 +16,7 @@ interface PagesProps {
       id: number;
     }[];
   }[];
-  refetchDocuments: () => Promise<any>;
+  refetchDocuments: () => Promise<void>;
 }
 
 export function Pages({

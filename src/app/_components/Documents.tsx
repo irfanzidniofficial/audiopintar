@@ -81,7 +81,9 @@ export function Documents() {
             <Pages
               documentId={document.id}
               pages={document.pages}
-              refetchDocuments={refetchDocuments}
+              refetchDocuments={async () => {
+                await refetchDocuments();
+              }}
               voice={"XKyLRH4oH4IqTWcQH3LI"}
             />
           </div>
