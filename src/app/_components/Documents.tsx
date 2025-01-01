@@ -78,8 +78,10 @@ export function Documents() {
             ))} */}
 
             {/* Generate audio from file */}
+
             <Pages
               documentId={document.id}
+              documentName={document.name}
               pages={document.pages}
               refetchDocuments={async () => {
                 await refetchDocuments();
