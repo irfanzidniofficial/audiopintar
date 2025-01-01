@@ -20,7 +20,7 @@ interface PagesProps {
   documentName: string;
   voice: string;
   pages: Page[];
-  refetchDocuments: () => Promise<any>;
+  refetchDocuments: () => Promise<void>;
 }
 
 export function Pages({
