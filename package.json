@@ -67,6 +67,9 @@
     "tailwindcss": "^3.4.3",
     "typescript": "^5.5.3"
   },
+  "optionalDependencies": {
+    "@libsql/linux-x64-gnu": "^0.5.0-pre.5"
+  },
   "ct3aMetadata": {
     "initVersion": "7.38.1"
   },
